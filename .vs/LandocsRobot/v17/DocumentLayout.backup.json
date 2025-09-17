@@ -1,0 +1,37 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\RobinLandocsAC\\Desktop\\test\\LandocsRobot\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{2EC1353A-DFDC-49A0-A383-8F8785F4E8C7}|LandocsRobot.csproj|c:\\users\\robinlandocsac\\desktop\\test\\landocsrobot\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2EC1353A-DFDC-49A0-A383-8F8785F4E8C7}|LandocsRobot.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\RobinLandocsAC\\Desktop\\test\\LandocsRobot\\Program.cs",
+              "RelativeDocumentMoniker": "Program.cs",
+              "ToolTip": "C:\\Users\\RobinLandocsAC\\Desktop\\test\\LandocsRobot\\Program.cs",
+              "RelativeToolTip": "Program.cs",
+              "ViewState": "AgIAAIQBAAAAAAAAAAAUwMgAAAAwAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-11-17T08:11:03.364Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

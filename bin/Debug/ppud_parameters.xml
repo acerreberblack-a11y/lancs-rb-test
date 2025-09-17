@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Parameters>
+		<Parameter name="Бурейская ГЭС" value="БГЭС.Проекты ППУД"/>
+        <Parameter name="Исполнительный аппарат" value="ИА.Проекты ППУД"/>
+        <Parameter name="Волжская ГЭС" value="ВЛГЭС.Проекты ППУД"/>
+        <Parameter name="Воткинская ГЭС" value="ВГЭС.Проекты ППУД"/>
+        <Parameter name="Дагестанский филиал" value="ДФ.Проекты ППУД"/>
+        <Parameter name="Жигулевская ГЭС" value="ЖГЭС.Проекты ППУД"/>
+        <Parameter name="Загорская ГАЭС" value="ЗГАЭС.Проекты ППУД"/>
+        <Parameter name="Зейская ГЭС" value="ЗГЭС.Проекты ППУД"/>
+        <Parameter name="Кабардино-Балкарский филиал" value="КБФ.Проекты ППУД"/>
+        <Parameter name="Камская ГЭС" value="КамГЭС.Проекты ППУД"/>
+        <Parameter name="Каскад Верхневолжских ГЭС" value="КВГЭС.Проекты ППУД"/>
+        <Parameter name="Каскад Кубанских ГЭС" value="ККГЭС.Проекты ППУД"/>
+        <Parameter name="Нижегородская ГЭС" value="НЖГЭС.Проекты ППУД"/>
+        <Parameter name="Новосибирская ГЭС" value="НГЭС.Проекты ППУД"/>
+        <Parameter name="Саратовская ГЭС" value="СарГЭС.Проекты ППУД"/>
+        <Parameter name="Северо-Осетинский филиал" value="СО.Проекты ППУД"/>
+        <Parameter name="Чебоксарская ГЭС" value="ЧГЭС.Проекты ППУД"/>
+        <Parameter name="КорУнГ" value="КУГ.Проекты ППУД"/>
+        <Parameter name="Хабаровский филиал" value="ХФ.Проекты ППУД"/>
+        <Parameter name="Приморский филиал" value="ПФ.Проекты ППУД"/>
+        <Parameter name="Якутский филиал" value="ЯФ.Проекты ППУД"/>
+        <Parameter name="Карачаево-Черкесский филиал" value="КЧФ.Проекты ППУД"/>
+        <Parameter name="Саяно-Шушенская ГЭС (СШГЭС им. П.С. Непорожнего)" value="СШГЭС.Проекты ППУД"/>
+</Parameters>

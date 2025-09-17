@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Parameters>
+	
+	<Parameter name="AppLandocsPath" value="C:\Users\RobinLandocsAC\AppData\Local\Apps\2.0\P5L8YXKH.MD2\WYROW58K.TZV\land...app_564c2c838af24d09_0003.0006_c04a00086fb426e6\LanDocs3.exe" />
+	
+    <!-- Путь к файлу с сопоставлением организаций для поиска ППУД -->
+    <Parameter name="PathToOrganization" value="C:\Users\RobinLandocsAC\Desktop\LanDocsRobotReborn\landocs2\LandocsRobot\bin\Debug\ppud_parameters.xml" />
+    
+    <!-- Путь до файла с заявками -->
+    <Parameter name="InputFolderPath" value="C:\Users\RobinLandocsAC\Desktop\LanDocsRobotReborn\landocs2\LandocsRobot\bin\Debug\Input" />
+    
+    <!-- Путь для сохранения готовых файлов -->
+    <Parameter name="OutputFolderPath" value="C:\Users\RobinLandocsAC\Desktop\LanDocsRobotReborn\landocs2\LandocsRobot\bin\Debug\Output" />
+    
+	<!-- Подписант -->
+	<Parameter name="Signatory" value="Черданцева Наталья Викторовна" />
+	
+	<!--Папка с профилями Landocs-->
+	<Parameter name="ConfigLandocsFolder" value="C:\Users\RobinLandocsAC\AppData\Local\LANIT\LanDocs\3.6.1.39" />
+	
+	<!--Файл кастомного профиля конфигурации Landocs-->
+	<Parameter name="ConfigLandocsCustomFile" value="C:\Users\RobinLandocsAC\Desktop\LanDocsRobotReborn\landocs2\LandocsRobot\bin\Debug\UserSettings.xml" />
+	
+    <!-- Количество дней хранения логов -->
+    <Parameter name="LogRetentionDays" value="30" />
+	
+	<!-- Уровень логирования "Info" "Debug" -->
+	<Parameter name="LogLevel" value="Debug" />
+</Parameters>
