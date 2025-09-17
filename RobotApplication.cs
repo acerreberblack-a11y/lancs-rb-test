@@ -341,6 +341,7 @@ namespace LandocsRobot
                             try
                             {
                                 Log(LogLevel.Info, "Нажимаем Ctrl+F для вызова окна поиска ППУД.");
+                                EnsureEnglishKeyboardLayout();
                                 SendKeys.SendWait("^{f}");
                                 Thread.Sleep(3000);
 
@@ -1876,6 +1877,37 @@ namespace LandocsRobot
         {
             string ticketFolder = GetTicketValue("ticketFolderName");
             _logger.Log(level, message, ticketFolder);
+        }
+
+        /// <summary>
+        /// Переключает раскладку клавиатуры на английскую (en-US), если она доступна в системе.
+        /// </summary>
+        private void EnsureEnglishKeyboardLayout()
+        {
+            try
+            {
+                var englishCulture = new CultureInfo("en-US");
+                var englishInput = InputLanguage.InstalledInputLanguages
+                    .Cast<InputLanguage>()
+                    .FirstOrDefault(lang => string.Equals(lang.Culture.Name, englishCulture.Name, StringComparison.OrdinalIgnoreCase));
+
+                if (englishInput == null)
+                {
+                    Log(LogLevel.Warning, "Английская раскладка клавиатуры (en-US) не установлена. Переключение не выполнено.");
+                    return;
+                }
+
+                var currentInput = InputLanguage.CurrentInputLanguage;
+                if (!string.Equals(currentInput?.Culture.Name, englishCulture.Name, StringComparison.OrdinalIgnoreCase))
+                {
+                    InputLanguage.CurrentInputLanguage = englishInput;
+                    Log(LogLevel.Info, "Раскладка клавиатуры переключена на английскую (en-US).");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log(LogLevel.Warning, $"Не удалось переключить раскладку клавиатуры на английскую: {ex.Message}");
+            }
         }
 
         /// <summary>
