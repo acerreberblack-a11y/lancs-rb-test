@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Dynamic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
@@ -15,7 +16,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Xml;
+using System.Xml.Linq;
 using Excel = Microsoft.Office.Interop.Excel;
 using System.Windows.Input;
 
@@ -23,11 +24,11 @@ namespace LandocsRobot
 {
     internal class Program
     {
-        private static Dictionary<string, string> varConfig = new Dictionary<string, string>();
-        private static Dictionary<string, string> varOrganization = new Dictionary<string, string>();
-        private static Dictionary<string, string> varTicket = new Dictionary<string, string>();
-        private static string logFilePath;
-        private static LogLevel currentLogLevel = LogLevel.Info;
+        private static readonly Dictionary<string, string> _configValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        private static readonly Dictionary<string, string> _organizationValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        private static readonly Dictionary<string, string> _ticketValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        private static string _logFilePath = string.Empty;
+        private static LogLevel _currentLogLevel = LogLevel.Info;
 
         #region Подключение утилит и параметры для них
         enum LogLevel
@@ -88,7 +89,7 @@ namespace LandocsRobot
             string logDirectory = InitializeLogging();
 
             // Устанавливаем путь к файлу лога
-            logFilePath = Path.Combine(logDirectory, $"{DateTime.Now:yyyy-MM-dd}.log");
+            _logFilePath = Path.Combine(logDirectory, $"{DateTime.Now:yyyy-MM-dd}.log");
             Log(LogLevel.Info, "🤖 Запуск робота LandocsRobot");
 
             try
@@ -128,9 +129,9 @@ namespace LandocsRobot
                     try
                     {
                         // Очистка переменной заявки
-                        varTicket.Clear();
+                        _ticketValues.Clear();
                         string numberTicket = Path.GetFileNameWithoutExtension(ticket).Trim();
-                        varTicket["ticketFolderName"] = numberTicket.Replace("+", "");
+                        _ticketValues["ticketFolderName"] = numberTicket.Replace("+", "");
 
                         Log(LogLevel.Info, $"Начинаю обработку заявки: {numberTicket}");
 
@@ -149,10 +150,10 @@ namespace LandocsRobot
                         Log(LogLevel.Info, $"Извлеченные данные: Номер заявки - [{resultParseJson.Title}], Тип - [{resultParseJson.FormType}], Организация - [{resultParseJson.OrgTitle}], ППУД - [{resultParseJson.ppudOrganization}]");
 
                         // Сохранение извлеченной информации
-                        varTicket["ticketName"] = resultParseJson.Title;
-                        varTicket["ticketOrg"] = resultParseJson.OrgTitle;
-                        varTicket["ticketType"] = resultParseJson.FormType;
-                        varTicket["ticketPpud"] = resultParseJson.ppudOrganization;
+                        _ticketValues["ticketName"] = resultParseJson.Title;
+                        _ticketValues["ticketOrg"] = resultParseJson.OrgTitle;
+                        _ticketValues["ticketType"] = resultParseJson.FormType;
+                        _ticketValues["ticketPpud"] = resultParseJson.ppudOrganization;
 
                         // Поиск папки ЭДО
                         string ticketEdoFolder = GetFoldersSearchDirectory(ticket, "ЭДО");
@@ -199,7 +200,7 @@ namespace LandocsRobot
                         }
 
                         // Сохранение пути к PDF
-                        varTicket["pathPdf"] = newFoldersEdoChildren.PdfFolder;
+                        _ticketValues["pathPdf"] = newFoldersEdoChildren.PdfFolder;
 
                         Log(LogLevel.Info, $"Обработка заявки [{numberTicket}] завершена успешно.");
                     }
@@ -223,15 +224,15 @@ namespace LandocsRobot
                         var resultparseFileName = GetParseNameFile(Path.GetFileNameWithoutExtension(filePdf));
                         Log(LogLevel.Info, $"Начинаю работу по файлу: Индекс: [{index}], Файл: [{resultparseFileName}]. Всего файлов: [{arrayPdfFiles.Length}]");
                         //Получаем наименование контрагента
-                        varTicket["CounterpartyName"] = resultparseFileName.CounterpartyName?.Trim() ?? string.Empty;
+                        _ticketValues["CounterpartyName"] = resultparseFileName.CounterpartyName?.Trim() ?? string.Empty;
                         //Получаем номер документа
-                        varTicket["FileNameNumber"] = resultparseFileName.Number?.Trim() ?? string.Empty;
+                        _ticketValues["FileNameNumber"] = resultparseFileName.Number?.Trim() ?? string.Empty;
                         //Получаем дату документа
-                        varTicket["FileDate"] = resultparseFileName.FileDate?.Trim() ?? string.Empty;
+                        _ticketValues["FileDate"] = resultparseFileName.FileDate?.Trim() ?? string.Empty;
                         //Получаем ИНН
-                        varTicket["FileNameINN"] = resultparseFileName.INN?.Trim() ?? string.Empty;
+                        _ticketValues["FileNameINN"] = resultparseFileName.INN?.Trim() ?? string.Empty;
                         //Получаем КПП документа
-                        varTicket["FileNameKPP"] = resultparseFileName.KPP?.Trim() ?? string.Empty;
+                        _ticketValues["FileNameKPP"] = resultparseFileName.KPP?.Trim() ?? string.Empty;
                         try
                         {
                             Log(LogLevel.Info, $"Запускаю Landocs.");
@@ -1886,13 +1887,79 @@ namespace LandocsRobot
         /// </summary>
         static void Log(LogLevel level, string message)
         {
-            if (level <= currentLogLevel)
+            if (level > _currentLogLevel)
             {
-                using (StreamWriter writer = new StreamWriter(logFilePath, true))
+                return;
+            }
+
+            string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
+            string ticketFolder = GetTicketValue("ticketFolderName");
+            string context = string.IsNullOrWhiteSpace(ticketFolder) ? string.Empty : $"[{ticketFolder}] ";
+            string formattedMessage = $"{timestamp} [{level}] {context}{message}";
+
+            if (!string.IsNullOrWhiteSpace(_logFilePath))
+            {
+                try
                 {
-                    writer.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss} [{level}]: {(string.IsNullOrEmpty(GetTicketValue("ticketFolderName")) ? string.Empty : $"[{GetTicketValue("ticketFolderName")}]")} {message}");
+                    File.AppendAllText(_logFilePath, formattedMessage + Environment.NewLine);
                 }
-                Console.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss} [{level}] {message}");
+                catch (IOException ex)
+                {
+                    Console.Error.WriteLine($"Не удалось записать сообщение в лог: {ex.Message}");
+                }
+            }
+
+            Console.WriteLine(formattedMessage);
+        }
+
+        /// <summary>
+        /// Загрузка параметров конфигурации.
+        /// </summary>
+        static bool LoadParameters(
+            string filePath,
+            Dictionary<string, string> targetDictionary,
+            string missingFileMessage,
+            string successMessage,
+            string errorMessage)
+        {
+            if (!File.Exists(filePath))
+            {
+                Log(LogLevel.Error, missingFileMessage);
+                return false;
+            }
+
+            try
+            {
+                var document = XDocument.Load(filePath);
+
+                if (document.Root == null)
+                {
+                    Log(LogLevel.Error, $"Файл {filePath} не содержит корневой элемент.");
+                    return false;
+                }
+
+                targetDictionary.Clear();
+
+                foreach (var parameter in document.Root.Elements("Parameter"))
+                {
+                    string name = parameter.Attribute("name")?.Value;
+                    string value = parameter.Attribute("value")?.Value;
+
+                    if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(value))
+                    {
+                        continue;
+                    }
+
+                    targetDictionary[name] = value;
+                }
+
+                Log(LogLevel.Info, successMessage);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Log(LogLevel.Error, $"{errorMessage}: {ex.Message}");
+                return false;
             }
         }
 
@@ -1901,97 +1968,64 @@ namespace LandocsRobot
         /// </summary>
         static bool LoadConfig(string configPath)
         {
-            if (!File.Exists(configPath))
+            if (!LoadParameters(
+                    configPath,
+                    _configValues,
+                    "Файл config.xml не найден.",
+                    "Параметры успешно загружены из config.xml",
+                    "Ошибка при загрузке параметров"))
             {
-                Log(LogLevel.Error, "Файл config.xml не найден.");
                 return false;
             }
 
-            try
+            string logLevelStr = GetConfigValue("LogLevel");
+            if (Enum.TryParse(logLevelStr, true, out LogLevel logLevel))
             {
-                XmlDocument docxml = new XmlDocument();
-                docxml.Load(configPath);
-
-                foreach (XmlNode node in docxml.SelectNodes("/Parameters/Parameter"))
-                {
-                    var name = node.Attributes["name"]?.Value;
-                    var value = node.Attributes["value"]?.Value;
-                    if (!string.IsNullOrEmpty(name) && !string.IsNullOrEmpty(value))
-                        varConfig[name] = value;
-                }
-
-                string logLevelStr = varConfig.ContainsKey("LogLevel") ? varConfig["LogLevel"] : "Info";
-                if (Enum.TryParse(logLevelStr, true, out LogLevel logLevel))
-                {
-                    currentLogLevel = logLevel;
-                    Log(LogLevel.Info, $"Уровень логирования установлен на: {currentLogLevel}");
-                }
-
-                Log(LogLevel.Info, "Параметры успешно загружены из config.xml");
-                return true;
+                _currentLogLevel = logLevel;
+                Log(LogLevel.Info, $"Уровень логирования установлен на: {_currentLogLevel}");
             }
-            catch (Exception e)
+            else if (!string.IsNullOrWhiteSpace(logLevelStr))
             {
-                Log(LogLevel.Error, $"Ошибка при загрузке параметров: {e.Message}");
-                return false;
+                Log(LogLevel.Warning, $"Не удалось разобрать уровень логирования '{logLevelStr}'. Используется значение по умолчанию {_currentLogLevel}.");
             }
+
+            return true;
         }
 
         /// <summary>
         /// Получение значения из параметриа конфигурации.
         /// </summary>
-        static string GetConfigValue(string key) => varConfig.ContainsKey(key) ? varConfig[key] : string.Empty;
+        static string GetConfigValue(string key) => _configValues.TryGetValue(key, out var value) ? value : string.Empty;
 
         /// <summary>
         /// Загрузка параметров с ППУД.
         /// </summary>
         static bool LoadConfigOrganization(string pathToOrganization)
         {
-            if (!File.Exists(pathToOrganization))
-            {
-                Log(LogLevel.Error, "Не найден файл с перечислением организаций.");
-                return false;
-            }
-
-            try
-            {
-                XmlDocument docxml = new XmlDocument();
-                docxml.Load(pathToOrganization);
-
-                foreach (XmlNode node in docxml.SelectNodes("/Parameters/Parameter"))
-                {
-                    var name = node.Attributes["name"]?.Value;
-                    var value = node.Attributes["value"]?.Value;
-                    if (!string.IsNullOrEmpty(name) && !string.IsNullOrEmpty(value))
-                        varOrganization[name] = value;
-                }
-
-                Log(LogLevel.Info, "Список организаций успешно загружен.");
-                return true;
-            }
-            catch (Exception e)
-            {
-                Log(LogLevel.Error, $"Ошибка при загрузке списка организаций: {e.Message}");
-                return false;
-            }
+            return LoadParameters(
+                pathToOrganization,
+                _organizationValues,
+                "Не найден файл с перечислением организаций.",
+                "Список организаций успешно загружен.",
+                "Ошибка при загрузке списка организаций");
         }
 
         /// <summary>
         /// Получение значений параметров с файла с ППУД.
         /// </summary>
-        static string GetConfigOrganization(string key) => varOrganization.ContainsKey(key) ? varOrganization[key] : string.Empty;
+        static string GetConfigOrganization(string key) => _organizationValues.TryGetValue(key, out var value) ? value : string.Empty;
 
         /// <summary>
         /// Получение значения из текущей заявки.
         /// </summary>
-        static string GetTicketValue(string key) => varTicket.TryGetValue(key, out var value) ? value : string.Empty;
+        static string GetTicketValue(string key) => _ticketValues.TryGetValue(key, out var value) ? value : string.Empty;
 
         /// <summary>
         /// Метод очистки логов
         /// </summary>
         static void CleanOldLogs(string logDirectory, int retentionDays)
         {
-            foreach (var log in Directory.GetFiles(logDirectory, "*.txt").Where(f => File.GetCreationTime(f) < DateTime.Now.AddDays(-retentionDays)))
+            foreach (var log in Directory.EnumerateFiles(logDirectory, "*.txt").Where(f => File.GetCreationTime(f) < DateTime.Now.AddDays(-retentionDays)))
             {
                 try
                 {
@@ -2273,10 +2307,10 @@ namespace LandocsRobot
                 }
 
                 // Пытаемся найти организацию по названию
-                var matchingKeyValue = varOrganization.FirstOrDefault(kv => kv.Key == orgTitle);
+                var matchingKeyValue = _organizationValues.FirstOrDefault(kv => kv.Key == orgTitle);
                 if (matchingKeyValue.Key == null)
                 {
-                    Log(LogLevel.Fatal, $"ППУД для организации [{orgTitle}] не найдена в коллекции varOrganization. JSON: {filePath}");
+                    Log(LogLevel.Fatal, $"ППУД для организации [{orgTitle}] не найдена в коллекции _organizationValues. JSON: {filePath}");
                     throw new InvalidOperationException($"ППУД с ключом '{orgTitle}' не найдена.");
                 }
 
